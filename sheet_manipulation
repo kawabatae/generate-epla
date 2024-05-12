@@ -1,0 +1,125 @@
+Option Explicit
+
+Sub ExportAsCSV()
+ 
+Dim wbk_export As Workbook
+Dim sht_export As Worksheet
+Dim export_path As Variant
+Dim i As Integer, j As Integer, num_entries As Integer
+Dim min_loadcase As Double, default_pf As Double
+
+'user inputs filepath to save .csv file
+export_path = Application.GetSaveAsFilename(FileFilter:= _
+    "Excel Files (*.csv), *.csv", _
+    Title:="Select location to save the csv file to:")
+
+'check if user selected a valid path (checks if exportPath is a string)
+If VarType(export_path) <> 8 Then
+    MsgBox ("No file path specified. Export canceled.")
+    Exit Sub
+End If
+
+'Exports csv file
+Set sht_export = ThisWorkbook.Worksheets("Output")     'Sheet to export as CSV
+Set wbk_export = Application.Workbooks.Add
+sht_export.Copy Before:=wbk_export.Worksheets(wbk_export.Worksheets.Count)
+Application.DisplayAlerts = False                       'Possibly overwrite without asking
+
+'deletes top rows
+Rows(3).EntireRow.Delete
+Rows(2).EntireRow.Delete
+Rows(1).EntireRow.Delete
+
+' Remove all columns to the right of "Load Case 5"
+Columns("N:ZZ").EntireColumn.Delete
+
+' Renaming column headers to match H-K format.
+Cells(1, 3).Value = "Longitudinal Location"
+Cells(1, 4).Value = "Transverse Location"
+Cells(1, 5).Value = "Vertical Location"
+Cells(1, 6).Value = "Power"
+Cells(1, 7).Value = "Voltage"
+Cells(1, 8).Value = "Power Factor"
+
+' Checks if load factor is 0, if so makes it 0.05 so H&K code can execute.
+num_entries = Worksheets("Output").UsedRange.Rows.Count
+min_loadcase = 0.05
+
+For i = 2 To num_entries
+    For j = 9 To 13
+        If (Cells(i, j) = 0) Then
+            Cells(i, j).Value = min_loadcase
+        End If
+    Next j
+Next i
+
+
+
+' Checks if power factor is empty or 0, set to default value of 0.85.
+default_pf = 0.85
+For i = 2 To num_entries
+    If (Cells(i, 8) = 0 Or IsEmpty(Cells(i, 8).Value)) Then
+        Cells(i, 8).Value = default_pf
+    End If
+Next i
+
+
+' Converts power from kW to W.
+For i = 2 To num_entries
+    Cells(i, 6).Value = Cells(i, 6).Value * 1000
+Next i
+
+
+wbk_export.SaveAs Filename:=export_path, FileFormat:=xlCSV
+Application.DisplayAlerts = True
+wbk_export.Close SaveChanges:=False
+
+End Sub
+
+
+Sub duplicateRow(name As String, num_instances As Integer, offset As Integer)
+
+Dim i As Integer, j As Integer, num_entries As Integer
+
+num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1
+
+For i = 0 To num_entries - 1
+    If Cells(i + offset, 2).Value = name Then
+        Cells(i + offset, 2).EntireRow.Copy
+        For j = 1 To num_instances
+            Sheets("Output").Range("A" & num_entries + offset + j - 1).PasteSpecial Paste:=xlValues
+            Sheets("Output").Range("B" & num_entries + offset + j - 1).Value = name & " - " & j
+        Next j
+        Cells(i + offset, 2).EntireRow.Delete
+    End If
+Next i
+
+End Sub
+
+Sub sortOutput()
+
+
+End Sub
+
+Sub clearOutput()
+' Clears the "Output" sheet without updating the screen.
+
+Application.ScreenUpdating = False
+Worksheets("Output").Select
+Range("A5:Z999").Clear  'clears out Output sheet
+Range("T1").Clear   'SNAME T&R genset sizing estimate cell
+Worksheets("Input").Select
+Application.ScreenUpdating = True
+
+End Sub
+
+Sub assignLocation(row_index As Integer, list_index As Integer, location_list As Collection)
+' Assigns the longitudinal, transverse, and vertical locations to the value of the item at index list_index in location_list collection.
+
+Cells(row_index, 3).Value = Round(location_list(list_index).Longitudinal, 2)       ' Assigns longitudinal location.
+Cells(row_index, 4).Value = Round(location_list(list_index).Transverse, 2)         ' Assigns transverse location.
+Cells(row_index, 5).Value = Round(location_list(list_index).Vertical, 2)           ' Assigns vertical location.
+            
+
+End Sub
+
