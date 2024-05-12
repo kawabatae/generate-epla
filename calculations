@@ -1,0 +1,416 @@
+Option Explicit
+
+Function estimate_location(ship_type As String, LBP As Double, beam As Double, n_decks_blw As Integer, n_decks_abv As Integer, depth As Double, num_spaces As Integer) As Variant
+' Creates location_node objects to estimate relevant spaces on a vessel.
+' Assumed compartments are full breadth, num_nodes spaces per deck
+
+Dim i As Integer, j As Integer
+Dim location_list As New Collection
+Dim location As New location_node
+
+If ship_type = "Double-Ended Ferry" Then
+    'assume for DE ferry, machinary spaces are in the center 1/2 below deck, with aux mach spaces aft and fwd of those spaces
+    
+    ' Creating space below deck, assumed one space.
+    For i = 1 To n_decks_blw
+        For j = 1 To num_spaces
+            Set location = New location_node
+            With location
+                .name = "Machinery Space, " & i & ", " & j
+                .Longitudinal = Round(LBP * j / (num_spaces + 1), 2)
+                .Vertical = Round(depth / (1 + n_decks_blw) * i, 2)
+                .Transverse = 0
+            End With
+            location_list.Add location
+        Next j
+    Next i
+    
+    ' Creating spaces on main deck, assumed main deck is as depth.
+    For i = 1 To num_spaces
+        Set location = New location_node
+        With location
+            .name = "Main Deck, " & i
+            .Longitudinal = Round(LBP * i / (num_spaces + 1), 2)
+            .Vertical = Round(depth, 2)
+            .Transverse = 0
+        End With
+        location_list.Add location
+    Next i
+    
+    ' Creating spaces on uppers deck, assumed main deck is as depth.
+    For i = 1 To n_decks_abv
+        For j = 1 To num_spaces
+            Set location = New location_node
+            With location
+                .name = "Upper Deck " & i & ", " & j
+                .Longitudinal = Round(LBP * j / (num_spaces + 1), 2)
+                .Vertical = Round(depth + i * 3, 2)
+                .Transverse = 0
+            End With
+            location_list.Add location
+        Next j
+    Next i
+    
+Else
+    'basic assumption for non-double ended ferry ship type
+    
+     ' Creating space below deck, assumed one deck.
+    For i = 1 To num_spaces
+        Set location = New location_node
+        With location
+            .name = "Machinery Space, " & i
+            .Longitudinal = Round(LBP * i / (num_spaces + 1), 2)
+            .Vertical = Round(depth / 2, 2)
+            .Transverse = 0
+        End With
+        location_list.Add location
+    Next i
+    
+    ' Creating spaces on main deck, assumed main deck is as depth.
+    For i = 1 To num_spaces
+        Set location = New location_node
+        With location
+            .name = "Main Deck, " & i
+            .Longitudinal = Round(LBP * i / (num_spaces + 1), 2)
+            .Vertical = Round(depth, 2)
+            .Transverse = 0
+        End With
+        location_list.Add location
+    Next i
+    
+    ' Creating spaces on uppers deck, assumed main deck is as depth.
+    For i = 1 To n_decks_abv
+        For j = 1 To num_spaces
+            Set location = New location_node
+            With location
+                .name = "Upper Deck " & i & ", " & j
+                .Longitudinal = Round(LBP * j / (num_spaces + 1), 2)
+                .Vertical = Round(depth + i * 3, 2)
+                .Transverse = 0
+            End With
+            location_list.Add location
+        Next j
+    Next i
+    
+End If
+
+' Prints spaces to console for debugging.
+'Debug.Print (vbCrLf & vbCrLf & "Printing location nodes: ")
+'For i = 1 To location_list.Count
+'    location_list(i).report
+'Next i
+
+' Return location_list collection as function output.
+Set estimate_location = location_list
+
+End Function
+
+
+Function calculate_lighting(ship_type As String, LBP As Double, beam As Double, n_decks_blw As Integer, n_decks_abv As Integer) As Variant
+'estimates the lighting and emergency lighting load in kW
+
+Dim lighting_area As Double, lighting_factor As Double, lighting_power As Double, lighting_individual_area As Double, lighting_density As Double, mach_lighting_density As Double
+Dim n_decks As Integer
+n_decks = n_decks_blw + n_decks_abv + 1
+
+Dim lighting_kW, e_lighting_kW As Double
+Dim mach_area, mach_factor, mach_kW As Double
+Dim e_lighting_percent As Double
+Dim return_array(0 To 2) As Double
+
+Select Case ship_type
+
+Case "Double-Ended Ferry"
+    ' Lighting load calculations for double-ended ferries
+    
+    'calculating lighting for non-machinery decks
+    lighting_area = LBP * beam * (n_decks_abv + 1)
+    lighting_factor = 0.75  'reduces lighting area to generalized applicable area
+    lighting_power = 40     'estimated wattage of lighting in watts
+    lighting_individual_area = 3    'estimated square meter of area coverage per light
+    'lighting_density = lighting_power / lighting_individual_area / 1000   'estimated lighting density in kW/m^2
+    lighting_density = 0.0090384  'lighting power density from IECC 2021 for "lobby, general" classification
+    
+    'calculate lighting kW
+    lighting_kW = lighting_area * lighting_factor * lighting_density
+    
+    'calculating lighting for machinery decks
+    
+    mach_area = LBP * beam * n_decks_blw
+    mach_factor = 0.75
+    mach_lighting_density = 0.01356  'lighting power density from IECC 2021 for "workshop" classification
+    mach_kW = mach_area * mach_factor * mach_lighting_density
+    
+    'calculating emergency lighting
+    e_lighting_percent = 0.3    'estimated amount of emergency lighting compared to normal lighting
+    e_lighting_kW = (lighting_kW + mach_kW) * e_lighting_percent
+    
+    'returning calculations into array to pass back to Main() sub
+    return_array(0) = lighting_kW
+    return_array(1) = mach_kW
+    return_array(2) = e_lighting_kW
+
+Case Else
+    ' Lighting load calculations for non-double-ended ferries (currently a duplicate).
+    
+     'calculating lighting for non-machinery decks
+    lighting_area = LBP * beam * (n_decks_abv + 1)
+    lighting_factor = 0.75  'reduces lighting area to generalized applicable area
+    lighting_power = 40     'estimated wattage of lighting in watts
+    lighting_individual_area = 3    'estimated square meter of area coverage per light
+    'lighting_density = lighting_power / lighting_individual_area / 1000   'estimated lighting density in kW/m^2
+    lighting_density = 0.0090384  'lighting power density from IECC 2021 for "lobby, general" classification
+    
+    'calculate lighting kW
+    lighting_kW = lighting_area * lighting_factor * lighting_density
+    
+    'calculating lighting for machinery decks
+    mach_area = LBP * beam * n_decks_blw
+    mach_factor = 0.75
+    mach_lighting_density = 0.01356  'lighting power density from IECC 2021 for "workshop" classification
+    mach_kW = mach_area * mach_factor * mach_lighting_density
+    
+    'calculating emergency lighting
+    e_lighting_percent = 0.3    'estimated amount of emergency lighting compared to normal lighting
+    e_lighting_kW = (lighting_kW + mach_kW) * e_lighting_percent
+    
+    'returning calculations into array to pass back to Main() sub
+    return_array(0) = lighting_kW
+    return_array(1) = mach_kW
+    return_array(2) = e_lighting_kW
+
+End Select
+
+calculate_lighting = return_array
+
+End Function
+
+Function calculate_hvac(ship_type As String, LBP As Double, beam As Double, n_decks_blw As Integer, n_decks_abv As Integer, n_crew, n_passengers) As Variant
+' Returns the estimated upper decks, main deck, and machinery deck HVAC power loads.
+
+Dim hvac_area, hvac_factor, hvac_density, hvac_kW As Double
+Dim upper_percent, main_percent, mach_percent As Double
+Dim return_array(0 To 2) As Double
+
+Dim crew_heat_gain, crew_kW, passenger_heat_gain, passenger_kW, SEER As Double
+crew_heat_gain = 149 / 1000         ' kW sensible heat gain for factory - heavy work
+passenger_heat_gain = 63 / 1000     ' kW sensible heat gain for offices, hotels, apartments
+SEER = 10                           ' Assumed seasonal energy efficiency rating of HVAC units
+
+Select Case ship_type
+
+Case "Double-Ended Ferry"
+    ' Calculates the HVAC load for double-ended ferry.
+
+    'factors used for the HVAC aggregate system analysis
+    hvac_factor = 0.65   'coefficient to adjust HVAC area
+    hvac_area = LBP * beam * (n_decks_blw + n_decks_abv + 1) * hvac_factor 'estimated area requiring HVAC
+    hvac_density = 0.05     'estimated kW/m^2 for HVAC taken from water cooled chilled water HVAC system for factory/industrial uses
+    crew_kW = crew_heat_gain * n_crew
+    passenger_kW = passenger_heat_gain * n_passengers
+    ' Estimated hvac kW
+    hvac_kW = hvac_area * hvac_density + (crew_kW + passenger_kW) / SEER
+    
+    'factors for estimation of HVAC deck percentages based on analyzed EPLA data
+    upper_percent = 0.32
+    main_percent = 0.18
+    mach_percent = 0.5
+    
+    'returning calculations into array to pass back to Main() sub
+    return_array(0) = hvac_kW * upper_percent   'estimated upper decks hvac kW
+    return_array(1) = hvac_kW * main_percent    'estimated main deck hvac kW
+    return_array(2) = hvac_kW * mach_percent    'estimated mach decks hvac kW
+    
+Case Else
+    ' Calculates the HVAC load for non-double-ended ferry (currently a duplicate).
+    
+    'factors used for the HVAC aggregate system analysis
+    hvac_factor = 0.65   'coefficient to adjust HVAC area
+    hvac_area = LBP * beam * (n_decks_blw + n_decks_abv + 1) * hvac_factor 'estimated area requiring HVAC
+    hvac_density = 0.05     'estimated kW/m^2 for HVAC taken from water cooled chilled water HVAC system for factory/industrial uses
+    crew_kW = crew_heat_gain * n_crew
+    passenger_kW = passenger_heat_gain * n_passengers
+    ' Estimated hvac kW
+    hvac_kW = hvac_area * hvac_density + (crew_kW + passenger_kW) / SEER
+    
+    'factors for estimation of HVAC deck percentages based on analyzed EPLA data
+    upper_percent = 0.32
+    main_percent = 0.18
+    mach_percent = 0.5
+    
+    'returning calculations into array to pass back to Main() sub
+    return_array(0) = hvac_kW * upper_percent   'estimated upper decks hvac kW
+    return_array(1) = hvac_kW * main_percent    'estimated main deck hvac kW
+    return_array(2) = hvac_kW * mach_percent    'estimated mach decks hvac kW
+
+End Select
+
+calculate_hvac = return_array
+
+End Function
+
+Function calculate_nav()
+'estimates the loads for navigation equipment
+
+Dim pa_system, ais_system, radar_system, radio, gyrocompass, other As Double
+pa_system = 5
+ais_system = 2
+radar_system = 4
+radio = 5
+gyrocompass = 3 'estimated loads for the time being
+other = 2
+
+Dim return_array(0 To 5) As Double
+return_array(0) = pa_system
+return_array(1) = ais_system
+return_array(2) = radar_system
+return_array(3) = radio
+return_array(4) = gyrocompass
+return_array(5) = other
+
+calculate_nav = return_array
+
+End Function
+
+Function firepump_estimate(displacement As Double)
+' Returns the estimated kW rating for the fire pump based on regression.
+
+Dim result As Double
+
+result = 0.0305 * displacement - 16.04
+
+firepump_estimate = Round(result, 2)
+
+End Function
+
+Function LO_estimate(ME_MCR As Double)
+' Returns the estimated kW rating for the LO pump based on regression.
+
+Dim result As Double
+
+result = 0.0003 * ME_MCR + 0.0684
+
+LO_estimate = Round(result, 2)
+
+End Function
+
+Function FO_estimate(ME_MCR As Double)
+' Returns the estimated kW rating for the FO pump based on regression.
+
+Dim result As Double
+
+result = -0.0003 * ME_MCR + 5.6349
+
+FO_estimate = Round(result, 2)
+
+End Function
+
+Function bilge_estimate(displacement As Double)
+' Returns the estimated kW rating for the bilge pump based on regression.
+
+Dim result As Double
+
+result = 0.0342 * displacement - 13.805
+
+bilge_estimate = Round(result, 2)
+
+End Function
+
+
+Function potable_estimate(n_passengers As Integer)
+' Returns the estimated kW rating for the potable water pump based on regression.
+
+Dim result As Double
+
+result = 0.0022 * n_passengers + 2.5441
+
+potable_estimate = Round(result, 2)
+
+End Function
+
+Function SW_estimate(displacement As Double)
+' Returns the estimated kW rating for the SW pump based on regression.
+
+Dim result As Double
+
+result = 0.0033 * displacement + 36.283
+
+SW_estimate = Round(result, 2)
+
+End Function
+
+Function FW_estimate(ME_MCR As Double)
+' Returns the estimated kW rating for the FW pump based on regression.
+
+Dim result As Double
+
+result = 0.0009 * ME_MCR - 0.585
+
+FW_estimate = Round(result, 2)
+
+End Function
+
+Function ballast_estimate(displacement As Double)
+' Returns the estimated kW rating for the ballast pump based on regression.
+' Assume equivalent to half of fire pump
+
+Dim result As Double
+
+result = 0.0305 * displacement - 16.04
+
+ballast_estimate = Round(result / 2, 2)
+
+End Function
+
+Function sewage_estimate(displacement As Double)
+' Returns the estimated kW rating for the sewage pump based on regression.
+
+Dim result As Double
+
+result = 0.0014 * displacement + 2.3346
+
+sewage_estimate = Round(result, 2)
+
+End Function
+
+Function SS_comp_estimate(ME_MCR As Double)
+' Returns the estimated kW rating for the FW pump based on regression.
+
+Dim result As Double
+
+result = -0.0014 * ME_MCR + 25.127
+
+SS_comp_estimate = Round(result, 2)
+
+End Function
+
+Function starting_comp_estimate(displacement As Double)
+' Returns the estimated kW rating for the sewage pump based on regression.
+
+Dim result As Double
+
+result = 0.0074 * displacement + 2.3346 - 5.7688
+starting_comp_estimate = Round(result, 2)
+
+End Function
+
+Function mooring_capstan_estimate(displacement As Double)
+' Returns the estimated kW rating for the sewage pump based on regression.
+
+Dim result As Double
+
+result = 0.0052 * displacement + 2.3346 + 7.3889
+mooring_capstan_estimate = Round(result, 2)
+
+End Function
+
+Function anchor_winch_estimate(displacement As Double)
+' Returns the estimated kW rating for the sewage pump based on regression.
+
+Dim result As Double
+
+result = 0.0008 * displacement + 2.3346 + 6.0712
+anchor_winch_estimate = Round(result, 2)
+
+End Function
+
