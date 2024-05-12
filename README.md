@@ -1,2 +1,2 @@
-# create-epla
+# EPLA Generation Tool
 Senior Thesis Project
