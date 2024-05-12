@@ -1,0 +1,480 @@
+Option Explicit
+
+Sub Button1_Click()
+' When the button is clicked, call the main subroutine to execute the EPLA generation code.
+
+Call main   'use button to activate main subroutine
+    
+End Sub
+
+Function check_inputs()
+' Checks if the inputs are nonempty and with the proper input type. Failure returns false, no problems returns true
+
+Dim myCell, myRange As Range
+Set myRange = ActiveWorkbook.Sheets("Input").Range("B7:B19")
+
+Dim result As Boolean
+result = True
+
+' Verifies all data is put into the program input page.
+Dim check_empty As Boolean
+check_empty = False
+
+For Each myCell In myRange
+    myCell.Interior.Color = xlNone
+    If IsEmpty(myCell) Then
+        ' Empty input cell detected.
+        myCell.Interior.Color = RGB(255, 87, 87)
+        check_empty = True
+    End If
+Next myCell
+
+' If any empty cells, exit sub and tell user to input values.
+If (check_empty) Then
+    MsgBox ("Please provide values for all inputs.")
+    result = False
+End If
+
+' Checks if LOA, LBP, LWL, beam, draft, depth, displacement, number of decks above/below main, number of crew and passengers, vessel speed and design MCR are numeric.
+If (Not (IsNumeric(ThisWorkbook.Sheets("Input").Cells(7, 2).Value))) Then
+    MsgBox ("LOA input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(8, 2).Value))) Then
+    MsgBox ("LBP input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(9, 2).Value))) Then
+    MsgBox ("LWL input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(10, 2).Value))) Then
+    MsgBox ("Beam input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(11, 2).Value))) Then
+    MsgBox ("Draft input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(12, 2).Value))) Then
+    MsgBox ("Depth input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(13, 2).Value))) Then
+    MsgBox ("Displacement input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(14, 2).Value))) Then
+    MsgBox ("Number of decks above main deck input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(15, 2).Value))) Then
+    MsgBox ("Number of decks below main deck input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(16, 2).Value))) Then
+    MsgBox ("Number of crew input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(17, 2).Value))) Then
+    MsgBox ("Number of passengers input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(18, 2).Value))) Then
+    MsgBox ("Speed input is not numeric. Please input a number.")
+    result = False
+End If
+
+If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(19, 2).Value))) Then
+    MsgBox ("Speed input is not numeric. Please input a number.")
+    result = False
+End If
+
+' Checks if propulsion and ship type are a string.
+If Not ((Application.IsText(ThisWorkbook.Sheets("Input").Cells(20, 2).Value))) Then
+    MsgBox ("Propulsion type input is not a string. Please input a correct string.")
+    result = False
+End If
+
+If Not ((Application.IsText(ThisWorkbook.Sheets("Input").Cells(21, 2).Value))) Then
+    MsgBox ("Ship type input is not a string. Please input a correct string.")
+    result = False
+End If
+
+
+check_inputs = result
+
+End Function
+
+
+Sub main()
+' Main subroutine for EPLA generation.
+
+
+' Input vessel particulars.
+Dim LOA As Double, LBP As Double, LWL As Double, beam As Double, draft As Double, depth As Double, ME_MCR As Double, displacement As Double, speed As Double
+Dim n_decks_abv As Integer, n_decks_blw As Integer, n_crew As Integer, n_passengers As Integer
+Dim prop_type As String, ship_type As String
+Dim i As Integer
+Dim list_index As Integer
+Dim pump_kW As Double
+Dim cell_text, iter As Variant
+
+' Checks if inputs are correct, stops code if incorrect.
+If (Not (check_inputs)) Then
+    Exit Sub
+End If
+
+' Initialize variables based on data on "Input" sheet depending on data type.
+LOA = ThisWorkbook.Sheets("Input").Cells(7, 2).Value
+LBP = ThisWorkbook.Sheets("Input").Cells(8, 2).Value
+LWL = ThisWorkbook.Sheets("Input").Cells(9, 2).Value
+
+beam = ThisWorkbook.Sheets("Input").Cells(10, 2).Value
+draft = ThisWorkbook.Sheets("Input").Cells(11, 2).Value
+depth = ThisWorkbook.Sheets("Input").Cells(12, 2).Value
+displacement = ThisWorkbook.Sheets("Input").Cells(13, 2).Value
+
+n_decks_abv = ThisWorkbook.Sheets("Input").Cells(14, 2).Value
+n_decks_blw = ThisWorkbook.Sheets("Input").Cells(15, 2).Value
+n_crew = ThisWorkbook.Sheets("Input").Cells(16, 2).Value
+n_passengers = ThisWorkbook.Sheets("Input").Cells(17, 2).Value
+
+speed = ThisWorkbook.Sheets("Input").Cells(18, 2).Value
+ME_MCR = ThisWorkbook.Sheets("Input").Cells(19, 2).Value
+
+prop_type = ThisWorkbook.Sheets("Input").Cells(20, 2).Value
+ship_type = ThisWorkbook.Sheets("Input").Cells(21, 2).Value
+
+
+' Displays a message for the user to read about this program.
+MsgBox ("This VBA program attempts to approximate a vessel EPLA based on vessel geometry. Locations are determined by a set of location nodes distributed evenly " _
+& "throughout the ship." & vbNewLine & "The results of the EPLA generation will be displayed in the 'Output' worksheet. The 'Output' worksheet can be exported using the 'Export " _
+& "Output (.csv)' button on the 'Input' worksheet")
+
+
+' Declaring variable used throughout the code.
+Dim block_volume As Double
+block_volume = LBP * beam * draft
+Dim n_decks As Integer
+n_decks = n_decks_blw + n_decks_abv + 1
+
+
+' Clears "Output" sheet.
+Call sheet_manip.clearOutput
+
+' Determines the column to filter based on vessel type.
+Dim filter_array(0 To 9, 0 To 1) As Variant
+Dim sort_column_num As Integer
+
+' Filling array with vessel type and column number in "Database" worksheet filtering.
+filter_array(0, 0) = "Double-Ended Ferry"
+filter_array(0, 1) = 16
+filter_array(1, 0) = "Ferry"
+filter_array(1, 1) = 17
+filter_array(2, 0) = "Cargo"
+filter_array(2, 1) = 18
+
+' Updates which column should be filtered in the "Database" worksheet based on input vessel type.
+For i = 0 To UBound(filter_array, 1)
+    If (filter_array(i, 0) = ship_type) Then
+        sort_column_num = filter_array(i, 1)
+        i = UBound(filter_array, 1)
+    End If
+Next i
+
+' Copies filtered data from "Database" sheet into "Output" sheet
+Sheets("Database").Select
+ActiveWorkbook.Worksheets("Database").ListObjects("Database_Table").Sort. _
+    SortFields.Clear
+ActiveSheet.ListObjects("Database_Table").Range.AutoFilter Field:=sort_column_num, Criteria1:= _
+    "<>"
+ActiveWorkbook.Worksheets("Database").ListObjects("Database_Table").Sort. _
+        SortFields.Add Key:=Range("Database_Table[SWBS]"), SortOn:= _
+        xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+
+' Pastes the sorted "Database" table to "Output" sheet.
+Worksheets("Database").ListObjects("Database_Table").DataBodyRange.SpecialCells(xlCellTypeVisible).Copy _
+    Destination:=Sheets("Output").Range("A5")
+
+' Removes formatting from pasted data.
+Worksheets("Output").Range("A5:ZZ9999").ClearFormats
+
+' Resets the "Database" sheet
+Application.CutCopyMode = False
+Worksheets("Database").Select
+Range("A1").Select
+Worksheets("Database").ListObjects("Database_Table").AutoFilter.ShowAllData
+Worksheets("Output").Select
+Range("A1").Select
+
+' Estimates locations for item placement on the vessel.
+Dim location_list As Collection, num_nodes As Integer
+num_nodes = 4           ' Four location nodes per deck, all on centerline.
+Set location_list = calculations.estimate_location(ship_type, LBP, beam, n_decks_blw, n_decks_abv, depth, num_nodes)
+
+
+' Estimates the lighting and emergency lighting loads for the vessel.
+Dim lighting_kW, mach_kW, e_lighting_kW As Double
+Dim temp_array As Variant
+temp_array = calculations.calculate_lighting(ship_type, LBP, beam, n_decks_blw, n_decks_abv)
+lighting_kW = temp_array(0)
+mach_kW = temp_array(1)
+e_lighting_kW = temp_array(2)
+Erase temp_array                        ' Clears the temporary array.
+
+' Estimates the navigation equipment power loads for the vessel.
+Dim nav_pa, nav_ais, nav_radar, nav_radio, nav_gyrocompass, nav_other As Double
+temp_array = calculations.calculate_nav
+nav_pa = temp_array(0)
+nav_ais = temp_array(1)
+nav_radar = temp_array(2)
+nav_radio = temp_array(3)
+nav_gyrocompass = temp_array(4)
+nav_other = temp_array(5)
+
+' Estimates the HVAC power loads for the vessel.
+Dim hvac_upper, hvac_main, hvac_mach As Double
+temp_array = calculations.calculate_hvac(ship_type, LBP, beam, n_decks_blw, n_decks_abv, n_crew, n_passengers)
+hvac_upper = temp_array(0)
+hvac_main = temp_array(1)
+hvac_mach = temp_array(2)
+' Clears the temporary array.
+Erase temp_array
+
+' Fills in "Output" sheet with calculated data.
+Dim num_entries As Integer, offset As Integer
+offset = 5
+num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1  'number of rows in data, excluding title row
+
+Worksheets("Output").Select
+
+' Duplicates certain "Database" line items so individual location data can be added (num_entries constantly updates so instead the code to count row is utilized.
+Call sheet_manip.duplicateRow("Emergency Lighting", location_list.Count, offset)
+Call sheet_manip.duplicateRow("Lighting", location_list.Count - num_nodes, offset)
+Call sheet_manip.duplicateRow("Machinery Space Lighting", num_nodes, offset)
+Call sheet_manip.duplicateRow("HVAC, Machinery Space", num_nodes, offset)
+Call sheet_manip.duplicateRow("HVAC, Main Deck", num_nodes, offset)
+Call sheet_manip.duplicateRow("HVAC, Upper Decks", location_list.Count - 2 * num_nodes, offset)
+
+' Updates num_entries now that new lines have been added.
+num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1  'number of rows in data, excluding title row
+
+
+' Sorting through item names of generated line items to display in the "Output" tab.
+For i = 0 To num_entries - 1
+    cell_text = Cells(i + offset, 2).Value
+    'MsgBox (cell_text & ", " & i)
+    iter = Split(cell_text, " - ")(0)
+
+    Select Case iter     'selection based on part name
+    
+        Case "Lighting"
+            Cells(i + offset, 6).Value = Round(lighting_kW / (location_list.Count - num_nodes), 2)      ' Determines lighting load.
+            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index + num_nodes, location_list)
+        
+        Case "Machinery Space Lighting"
+            Cells(i + offset, 6).Value = Round(mach_kW / num_nodes, 2)                                  ' Determines machinery space lighting load.
+            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+            
+        Case "Emergency Lighting"
+            Cells(i + offset, 6).Value = Round(e_lighting_kW / location_list.Count, 2)          ' Determines emergency lighting load.
+            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+
+        Case "HVAC, Upper Decks"
+            Cells(i + offset, 6).Value = Round(hvac_upper / (location_list.Count - 2 * num_nodes), 2) 'calculate upper decks hvac load
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index + 2 * num_nodes, location_list)
+        
+        Case "HVAC, Main Deck"
+            Cells(i + offset, 6).Value = Round(hvac_main / num_nodes, 2) 'calculate main deck hvac load
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index + num_nodes, location_list)
+        
+        Case "HVAC, Machinery Space"
+            Cells(i + offset, 6).Value = Round(hvac_mach / num_nodes, 2) 'calculate main deck hvac load
+            list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
+            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+            
+        ' Component load estimation, calculates loads then updates sheet with location assignment.
+        Case "Pump, LO"
+            Cells(i + offset, 6).Value = calculations.LO_estimate(ME_MCR)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+        
+        Case "Pump, FO"
+            Cells(i + offset, 6).Value = calculations.FO_estimate(ME_MCR)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+        
+        Case "Pump, ballast"
+            Cells(i + offset, 6).Value = calculations.ballast_estimate(displacement) / 2
+            'Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+
+            Call sheet_manip.duplicateRow("Pump, ballast", 2, offset)  ' Duplicates "Pump, fire" line item at end of table and deletes current line
+            Call sheet_manip.assignLocation(Range("C1").Value + offset - 2, 1, location_list)           ' First pump location.
+            Call sheet_manip.assignLocation(Range("C1").Value + offset - 1, num_nodes, location_list)   ' Second pump location
+
+            ' Accounts for additional line item added to EPLA, don't want repetition
+            If (i < num_entries - 1) Then
+                i = i - 1
+                num_entries = num_entries - 1
+            End If
+        
+        Case "Pump, fire"
+            ' Checks minimum number of fire pumps based on CFR 46 § 34.10-5.
+            If (LBP < 30.48) Then
+                ' Only one fire pump required.
+                Cells(i + offset, 6).Value = calculations.firepump_estimate(displacement)
+                Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Else
+                ' Additional firepump required.
+                Cells(i + offset, 6).Value = Round(calculations.firepump_estimate(displacement) / 2, 2)
+                Call sheet_manip.duplicateRow("Pump, fire", 2, offset)  ' Duplicates "Pump, fire" line item at end of table and deletes current line
+                Call sheet_manip.assignLocation(Range("C1").Value + offset - 2, 1, location_list)           ' First pump location.
+                Call sheet_manip.assignLocation(Range("C1").Value + offset - 1, num_nodes, location_list)   ' Second pump location
+                
+                ' Accounts for additional line item added to EPLA, don't want repetition
+                If (i < num_entries - 1) Then
+                    i = i - 1
+                    num_entries = num_entries - 1
+                End If
+
+            End If
+        
+        Case "Pump, bilge"
+            Cells(i + offset, 6).Value = calculations.bilge_estimate(displacement)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+        
+        Case "Pump, SW"
+            Cells(i + offset, 6).Value = calculations.SW_estimate(displacement)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+        
+        Case "Pump, FW"
+            Cells(i + offset, 6).Value = calculations.FW_estimate(ME_MCR)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+        
+        Case "Pump, sewage"
+            Cells(i + offset, 6).Value = calculations.sewage_estimate(displacement)
+        
+        Case "Pump, steering gear"
+            'Cells(i + offset, 6).Value = Round(130 + LBP / 94, 2)
+            
+        Case "Pump, hot water"
+            'Cells(i + offset, 6).Value = Round(1.5 * ME_MCR / 3900, 2)
+            
+        Case "Pump, potable water"
+            Cells(i + offset, 6).Value = calculations.potable_estimate(n_passengers)
+        
+        Case "Compressor, SS air"
+            Cells(i + offset, 6).Value = calculations.SS_comp_estimate(ME_MCR)
+            Call sheet_manip.assignLocation(i + offset, num_nodes / 2 + 1, location_list)
+            
+        Case "Anchor windlass"
+            Cells(i + offset, 6).Value = calculations.anchor_winch_estimate(displacement)
+            Call sheet_manip.assignLocation(i + offset, num_nodes, location_list)
+            
+        Case "Mooring capstan"
+            Cells(i + offset, 6).Value = calculations.mooring_capstan_estimate(displacement)
+            Call sheet_manip.assignLocation(i + offset, num_nodes, location_list)
+        
+        Case Else
+            Debug.Print ("Could not identify " & iter)
+        
+    End Select
+    
+Next i
+
+' Updates num_entries since additional items may have been added.
+num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1
+
+' Another loop to account for all uncategorized/empty items.
+For i = 0 To num_entries - 1
+
+    'sorting line items by SWBS for further approximations
+    Select Case Cells(i + offset, 1).Value
+        Case 200
+            ' Checks if location cells are all empty.
+            If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
+                ' Defaults to central location_node on machinery deck
+                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+            End If
+        
+        Case 300
+            ' Checks if location cells are all empty.
+            If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
+                ' Defaults to central location_node on machinery deck
+                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+            End If
+        
+        Case 400
+            ' Checks if location cells are all empty.
+            If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
+                ' Defaults electronics to fwdmost location_node on uppermost deck
+                Call sheet_manip.assignLocation(i + offset, location_list.Count - num_nodes + 1, location_list)
+            End If
+        
+        Case 500
+            ' Checks if location cells are all empty.
+            If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
+                ' Defaults to central location_node on machinery deck
+                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+            End If
+        
+        Case 600
+            ' Checks if location cells are all empty.
+            If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
+                ' Defaults electronics to fwdmost location_node on uppermost deck
+                Call sheet_manip.assignLocation(i + offset, location_list.Count - num_nodes + 1, location_list)
+            End If
+            
+        Case Else
+        
+    End Select
+    
+    If (Cells(i + offset, 7) = 0) Then
+        Cells(i + offset, 7) = 480
+    End If
+    
+    If (Cells(i + offset, 7) <> 0) Then
+        Cells(i + offset, 15).Value = Round(Cells(i + offset, 6).Value * 1000 / Cells(i + offset, 7).Value / Sqr(3), 1)  'calculated current
+    End If
+
+Next i
+
+' SNAME T&R 3-49 genset sizing estimate.
+Cells(1, 20).Value = Round((100 + 0.55 * (ME_MCR ^ 0.7)) * 1.5, 2)
+
+' Adds borders to "Output" data cells.
+Worksheets("Output").Range("A6").CurrentRegion.Borders.LineStyle = xlContinuous
+
+' Sorts the "Output" sheet by name and SWBS
+'Worksheets("Output").Range("A5:ZZ9999").Sort Key1:=Range("B4"), Order1:=xlAscending
+Worksheets("Output").Range("A5:ZZ9999").Sort Key1:=Range("A4"), Order1:=xlAscending
+
+
+End Sub
+
+
+Sub Button2_Click()
+'button to clear the "Output" sheet
+
+Call sheet_manip.clearOutput
+
+End Sub
+
