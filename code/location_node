@@ -12,42 +12,52 @@ Private Sub Class_Initialize()
     pLongitudinal = 0
     pVertical = 0
     pTransverse = 0
+    
 End Sub
 
 Public Property Get name() As String
     name = pName
+    
 End Property
 
 Public Property Let name(ByVal vNewValue As String)
     pName = vNewValue
+    
 End Property
 
 Public Property Get Longitudinal() As Double
     Longitudinal = pLongitudinal
+    
 End Property
 
 Public Property Let Longitudinal(ByVal vNewValue As Double)
     pLongitudinal = vNewValue
+    
 End Property
 
 Public Property Get Vertical() As Double
     Vertical = pVertical
+    
 End Property
 
 Public Property Let Vertical(ByVal vNewValue As Double)
     pVertical = vNewValue
+    
 End Property
 
 Public Property Get Transverse() As Double
     Transverse = pTransverse
+    
 End Property
 
 Public Property Let Transverse(ByVal vNewValue As Double)
     pTransverse = vNewValue
+    
 End Property
 
 Public Sub report()
     Debug.Print ("Name: " & pName & vbCrLf & "Long. Position (m): " & pLongitudinal & vbCrLf & "Vert. Position (m): " & pVertical & vbCrLf & "Trans. Position (m): " * pTransverse)
+    
 End Sub
 
 
