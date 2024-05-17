@@ -250,7 +250,7 @@ calculate_hvac = return_array
 End Function
 
 Function calculate_nav()
-'estimates the loads for navigation equipment
+' Estimates the loads for navigation equipment.
 
 Dim pa_system, ais_system, radar_system, radio, gyrocompass, other As Double
 pa_system = 5
@@ -272,145 +272,499 @@ calculate_nav = return_array
 
 End Function
 
-Function firepump_estimate(displacement As Double)
+Function firepump_estimate(ship_type As String, prop_type As String, displacement As Double)
 ' Returns the estimated kW rating for the fire pump based on regression.
 
 Dim result As Double
 
-result = 0.0305 * displacement - 16.04
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0305 * displacement - 16.04
+                
+            Case Else
+                result = 0.0305 * displacement - 16.04
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0305 * displacement - 16.04
+                
+            Case Else
+                result = 0.0305 * displacement - 16.04
+                
+            End Select
+    
+End Select
 
 firepump_estimate = Round(result, 2)
 
 End Function
 
-Function LO_estimate(ME_MCR As Double)
+Function LO_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
 ' Returns the estimated kW rating for the LO pump based on regression.
 
 Dim result As Double
 
-result = 0.0003 * ME_MCR + 0.0684
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0003 * ME_MCR + 0.2103
+                
+            Case Else
+                result = 0.0003 * ME_MCR + 0.2103
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0003 * ME_MCR + 0.0684
+                
+            Case Else
+                result = 0.0003 * ME_MCR + 0.0684
+                
+            End Select
+    
+End Select
 
 LO_estimate = Round(result, 2)
 
 End Function
 
-Function FO_estimate(ME_MCR As Double)
+Function FO_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
 ' Returns the estimated kW rating for the FO pump based on regression.
 
 Dim result As Double
 
-result = -0.0003 * ME_MCR + 5.6349
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0003 * ME_MCR + 5.9164
+                
+            Case Else
+                result = -0.0003 * ME_MCR + 5.9164
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0003 * ME_MCR + 5.6349
+                
+            Case Else
+                result = -0.0003 * ME_MCR + 5.6349
+                
+            End Select
+    
+End Select
 
 FO_estimate = Round(result, 2)
 
 End Function
 
-Function bilge_estimate(displacement As Double)
+Function bilge_estimate(ship_type As String, prop_type As String, displacement As Double)
 ' Returns the estimated kW rating for the bilge pump based on regression.
 
 Dim result As Double
 
-result = 0.0342 * displacement - 13.805
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0342 * displacement - 13.805
+                
+            Case Else
+                result = 0.0342 * displacement - 13.805
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0342 * displacement - 13.805
+                
+            Case Else
+                result = 0.0342 * displacement - 13.805
+                
+            End Select
+    
+End Select
 
 bilge_estimate = Round(result, 2)
 
 End Function
 
 
-Function potable_estimate(n_passengers As Integer)
+Function potable_estimate(ship_type As String, prop_type As String, n_passengers As Integer)
 ' Returns the estimated kW rating for the potable water pump based on regression.
 
 Dim result As Double
 
-result = 0.0022 * n_passengers + 2.5441
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0022 * n_passengers + 2.5441
+                
+            Case Else
+                result = 0.0022 * n_passengers + 2.5441
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0022 * n_passengers + 2.5441
+                
+            Case Else
+                result = 0.0022 * n_passengers + 2.5441
+                
+            End Select
+    
+End Select
 
 potable_estimate = Round(result, 2)
 
 End Function
 
-Function SW_estimate(displacement As Double)
+Function SW_estimate(ship_type As String, prop_type As String, displacement As Double)
 ' Returns the estimated kW rating for the SW pump based on regression.
 
 Dim result As Double
 
-result = 0.0033 * displacement + 36.283
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0119 * displacement + 124.15
+                
+            Case Else
+                result = 0.0033 * displacement + 36.283
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0033 * displacement + 36.283
+                
+            Case Else
+                result = 0.0033 * displacement + 36.283
+                
+            End Select
+    
+End Select
 
 SW_estimate = Round(result, 2)
 
 End Function
 
-Function FW_estimate(ME_MCR As Double)
+Function FW_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
 ' Returns the estimated kW rating for the FW pump based on regression.
 
 Dim result As Double
 
-result = 0.0009 * ME_MCR - 0.585
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0005 * ME_MCR + 0.9539
+                
+            Case Else
+                result = 0.0009 * ME_MCR - 0.585
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0009 * ME_MCR - 0.585
+                
+            Case Else
+                result = 0.0009 * ME_MCR - 0.585
+                
+            End Select
+    
+End Select
 
 FW_estimate = Round(result, 2)
 
 End Function
 
-Function ballast_estimate(displacement As Double)
+Function ballast_estimate(ship_type As String, prop_type As String, displacement As Double)
 ' Returns the estimated kW rating for the ballast pump based on regression.
 ' Assume equivalent to half of fire pump
 
 Dim result As Double
 
-result = 0.0305 * displacement - 16.04
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.01525 * displacement - 8.02
+                
+            Case Else
+                result = 0.0305 * displacement - 16.04
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0305 * displacement - 16.04
+                
+            Case Else
+                result = 0.0305 * displacement - 16.04
+                
+            End Select
+    
+End Select
 
 ballast_estimate = Round(result / 2, 2)
 
 End Function
 
-Function sewage_estimate(displacement As Double)
+Function sewage_estimate(ship_type As String, prop_type As String, displacement As Double)
 ' Returns the estimated kW rating for the sewage pump based on regression.
 
 Dim result As Double
 
-result = 0.0014 * displacement + 2.3346
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0014 * displacement + 2.3346
+                
+            Case Else
+                result = 0.0014 * displacement + 2.3346
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0014 * displacement + 2.3346
+                
+            Case Else
+                result = 0.0014 * displacement + 2.3346
+                
+            End Select
+    
+End Select
 
 sewage_estimate = Round(result, 2)
 
 End Function
 
-Function SS_comp_estimate(ME_MCR As Double)
-' Returns the estimated kW rating for the FW pump based on regression.
+Function SS_comp_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
+' Returns the estimated kW rating for the ship service air compressor based on regression.
 
 Dim result As Double
 
-result = -0.0014 * ME_MCR + 25.127
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.001 * ME_MCR + 22.96
+                
+            Case Else
+                result = -0.0014 * ME_MCR + 25.127
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0014 * ME_MCR + 25.127
+                
+            Case Else
+                result = -0.0014 * ME_MCR + 25.127
+                
+            End Select
+    
+End Select
 
 SS_comp_estimate = Round(result, 2)
 
 End Function
 
-Function starting_comp_estimate(displacement As Double)
-' Returns the estimated kW rating for the sewage pump based on regression.
+Function starting_comp_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
+' Returns the estimated kW rating for the starting air compressor based on regression.
 
 Dim result As Double
 
-result = 0.0074 * displacement + 2.3346 - 5.7688
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0019 * ME_MCR + 2.2647
+                
+            Case Else
+                result = 0.0074 * ME_MCR + 2.3346 - 5.7688
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0074 * ME_MCR + 2.3346 - 5.7688
+                
+            Case Else
+                result = 0.0074 * ME_MCR + 2.3346 - 5.7688
+                
+            End Select
+    
+End Select
+
 starting_comp_estimate = Round(result, 2)
 
 End Function
 
-Function mooring_capstan_estimate(displacement As Double)
-' Returns the estimated kW rating for the sewage pump based on regression.
+Function mooring_capstan_estimate(ship_type As String, prop_type As String, displacement As Double)
+' Returns the estimated kW rating for the mooring capstan based on regression.
 
 Dim result As Double
 
-result = 0.0052 * displacement + 2.3346 + 7.3889
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0052 * displacement + 7.3889
+                
+            Case Else
+                result = 0.0052 * displacement + 7.3889
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0052 * displacement + 7.3889
+                
+            Case Else
+                result = 0.0052 * displacement + 7.3889
+                
+            End Select
+    
+End Select
+
 mooring_capstan_estimate = Round(result, 2)
 
 End Function
 
-Function anchor_winch_estimate(displacement As Double)
-' Returns the estimated kW rating for the sewage pump based on regression.
+Function anchor_winch_estimate(ship_type As String, prop_type As String, displacement As Double)
+' Returns the estimated kW rating for the anchor windlass/winch based on regression.
 
 Dim result As Double
 
-result = 0.0008 * displacement + 2.3346 + 6.0712
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0008 * displacement + 6.0712
+                
+            Case Else
+                result = 0.0008 * displacement + 6.0712
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0008 * displacement + 6.0712
+                
+            Case Else
+                result = 0.0008 * displacement + 6.0712
+                
+            End Select
+    
+End Select
+
 anchor_winch_estimate = Round(result, 2)
 
 End Function
 
+Function pot_wat_heater_estimate(ship_type As String, prop_type As String, displacement As Double)
+' Returns the estimated kW rating for the potable water heater based on regression.
+
+Dim result As Double
+
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0049 * displacement - 7.3421
+                
+            Case Else
+                result = 0.0049 * displacement - 7.3421
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = 0.0049 * displacement - 7.3421
+                
+            Case Else
+                result = 0.0049 * displacement - 7.3421
+                
+            End Select
+    
+End Select
+
+pot_wat_heater_estimate = Round(result, 2)
+
+End Function
+
+Function FO_purifier_estimate(ship_type As String, prop_type As String, ME_MCR As Double)
+' Returns the estimated kW rating for the fuel oil purifier based on regression.
+
+Dim result As Double
+
+' First selects ship type, then selects propulsion type.
+Select Case ship_type
+    Case "Double-Ended Ferry"
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0004 * ME_MCR + 5.316
+                
+            Case Else
+                result = -0.0004 * ME_MCR + 5.316
+                
+            End Select
+    
+    Case Else
+        Select Case prop_type
+            Case "Direct Drive"
+                result = -0.0004 * ME_MCR + 5.316
+                
+            Case Else
+                result = -0.0004 * ME_MCR + 5.316
+                
+            End Select
+    
+End Select
+
+FO_purifier_estimate = Round(result, 2)
+
+End Function
