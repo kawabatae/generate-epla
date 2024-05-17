@@ -39,77 +39,92 @@ End If
 If (Not (IsNumeric(ThisWorkbook.Sheets("Input").Cells(7, 2).Value))) Then
     MsgBox ("LOA input is not numeric. Please input a number.")
     result = False
+    Cells(7, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(8, 2).Value))) Then
     MsgBox ("LBP input is not numeric. Please input a number.")
     result = False
+    Cells(8, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(9, 2).Value))) Then
     MsgBox ("LWL input is not numeric. Please input a number.")
     result = False
+    Cells(9, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(10, 2).Value))) Then
     MsgBox ("Beam input is not numeric. Please input a number.")
     result = False
+    Cells(10, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(11, 2).Value))) Then
     MsgBox ("Draft input is not numeric. Please input a number.")
     result = False
+    Cells(11, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(12, 2).Value))) Then
     MsgBox ("Depth input is not numeric. Please input a number.")
     result = False
+    Cells(12, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(13, 2).Value))) Then
     MsgBox ("Displacement input is not numeric. Please input a number.")
     result = False
+    Cells(13, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(14, 2).Value))) Then
     MsgBox ("Number of decks above main deck input is not numeric. Please input a number.")
     result = False
+    Cells(14, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(15, 2).Value))) Then
     MsgBox ("Number of decks below main deck input is not numeric. Please input a number.")
     result = False
+    Cells(15, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(16, 2).Value))) Then
     MsgBox ("Number of crew input is not numeric. Please input a number.")
     result = False
+    Cells(16, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(17, 2).Value))) Then
     MsgBox ("Number of passengers input is not numeric. Please input a number.")
     result = False
+    Cells(17, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(18, 2).Value))) Then
     MsgBox ("Speed input is not numeric. Please input a number.")
     result = False
+    Cells(18, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((IsNumeric(ThisWorkbook.Sheets("Input").Cells(19, 2).Value))) Then
     MsgBox ("Speed input is not numeric. Please input a number.")
     result = False
+    Cells(19, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 ' Checks if propulsion and ship type are a string.
 If Not ((Application.IsText(ThisWorkbook.Sheets("Input").Cells(20, 2).Value))) Then
     MsgBox ("Propulsion type input is not a string. Please input a correct string.")
     result = False
+    Cells(20, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 If Not ((Application.IsText(ThisWorkbook.Sheets("Input").Cells(21, 2).Value))) Then
     MsgBox ("Ship type input is not a string. Please input a correct string.")
     result = False
+    Cells(21, 2).Interior.Color = RGB(255, 87, 87)
 End If
 
 
@@ -172,7 +187,7 @@ n_decks = n_decks_blw + n_decks_abv + 1
 
 
 ' Clears "Output" sheet.
-Call sheet_manip.clearOutput
+Call sheet_manip.clear_output
 
 ' Determines the column to filter based on vessel type.
 Dim filter_array(0 To 9, 0 To 1) As Variant
@@ -261,12 +276,12 @@ num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1  'number of
 Worksheets("Output").Select
 
 ' Duplicates certain "Database" line items so individual location data can be added (num_entries constantly updates so instead the code to count row is utilized.
-Call sheet_manip.duplicateRow("Emergency Lighting", location_list.Count, offset)
-Call sheet_manip.duplicateRow("Lighting", location_list.Count - num_nodes, offset)
-Call sheet_manip.duplicateRow("Machinery Space Lighting", num_nodes, offset)
-Call sheet_manip.duplicateRow("HVAC, Machinery Space", num_nodes, offset)
-Call sheet_manip.duplicateRow("HVAC, Main Deck", num_nodes, offset)
-Call sheet_manip.duplicateRow("HVAC, Upper Decks", location_list.Count - 2 * num_nodes, offset)
+Call sheet_manip.duplicate_row("Emergency Lighting", location_list.Count, offset)
+Call sheet_manip.duplicate_row("Lighting", location_list.Count - num_nodes, offset)
+Call sheet_manip.duplicate_row("Machinery Space Lighting", num_nodes, offset)
+Call sheet_manip.duplicate_row("HVAC, Machinery Space", num_nodes, offset)
+Call sheet_manip.duplicate_row("HVAC, Main Deck", num_nodes, offset)
+Call sheet_manip.duplicate_row("HVAC, Upper Decks", location_list.Count - 2 * num_nodes, offset)
 
 ' Updates num_entries now that new lines have been added.
 num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1  'number of rows in data, excluding title row
@@ -275,60 +290,71 @@ num_entries = Worksheets("Output").UsedRange.Rows.Count - offset + 1  'number of
 ' Sorting through item names of generated line items to display in the "Output" tab.
 For i = 0 To num_entries - 1
     cell_text = Cells(i + offset, 2).Value
-    'MsgBox (cell_text & ", " & i)
     iter = Split(cell_text, " - ")(0)
 
     Select Case iter     'selection based on part name
     
         Case "Lighting"
             Cells(i + offset, 6).Value = Round(lighting_kW / (location_list.Count - num_nodes), 2)      ' Determines lighting load.
-            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            Cells(i + offset, 7).Value = 120                                                            ' Estimated voltage.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index + num_nodes, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index + num_nodes, location_list)
         
         Case "Machinery Space Lighting"
             Cells(i + offset, 6).Value = Round(mach_kW / num_nodes, 2)                                  ' Determines machinery space lighting load.
-            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            Cells(i + offset, 7).Value = 120                                                            ' Estimated voltage.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index, location_list)
             
         Case "Emergency Lighting"
-            Cells(i + offset, 6).Value = Round(e_lighting_kW / location_list.Count, 2)          ' Determines emergency lighting load.
-            Cells(i + offset, 7).Value = 120                                                    ' Estimated voltage.
+            Cells(i + offset, 6).Value = Round(e_lighting_kW / location_list.Count, 2)                  ' Determines emergency lighting load.
+            Cells(i + offset, 7).Value = 120                                                            ' Estimated voltage.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index, location_list)
 
         Case "HVAC, Upper Decks"
-            Cells(i + offset, 6).Value = Round(hvac_upper / (location_list.Count - 2 * num_nodes), 2) 'calculate upper decks hvac load
+            Cells(i + offset, 6).Value = Round(hvac_upper / (location_list.Count - 2 * num_nodes), 2)   ' Calculate upper decks hvac load.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index + 2 * num_nodes, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index + 2 * num_nodes, location_list)
         
         Case "HVAC, Main Deck"
-            Cells(i + offset, 6).Value = Round(hvac_main / num_nodes, 2) 'calculate main deck hvac load
+            Cells(i + offset, 6).Value = Round(hvac_main / num_nodes, 2)                                ' Calculate main deck hvac load.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index + num_nodes, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index + num_nodes, location_list)
         
         Case "HVAC, Machinery Space"
-            Cells(i + offset, 6).Value = Round(hvac_mach / num_nodes, 2) 'calculate main deck hvac load
+            Cells(i + offset, 6).Value = Round(hvac_mach / num_nodes, 2)                                ' Calculate main deck hvac load.
             list_index = Int(Split(Cells(i + offset, 2).Value, " - ")(1))
-            Call sheet_manip.assignLocation(i + offset, list_index, location_list)
+            Call sheet_manip.assign_location(i + offset, list_index, location_list)
             
         ' Component load estimation, calculates loads then updates sheet with location assignment.
         Case "Pump, LO"
-            Cells(i + offset, 6).Value = calculations.LO_estimate(ME_MCR)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = calculations.LO_estimate(ship_type, prop_type, ME_MCR) / 4
+            
+            ' Additional bilge pumps required.
+            Call sheet_manip.duplicate_row("Pump, LO", 4, offset)                                       ' Duplicates pump line item at end of table and deletes current line
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 4, 1, location_list)          ' First pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 3, 2, location_list)          ' Second pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 3, location_list)          ' Third pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 1, 4, location_list)          ' Fourth pump location
+            
+            ' Accounts for additional line item added to EPLA, don't want repetition
+            If (i < num_entries - 1) Then
+                i = i - 1
+                num_entries = num_entries - 3
+            End If
         
         Case "Pump, FO"
-            Cells(i + offset, 6).Value = calculations.FO_estimate(ME_MCR)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = calculations.FO_estimate(ship_type, prop_type, ME_MCR)
+            Call sheet_manip.assign_location(i + offset, num_nodes / 2, location_list)
         
         Case "Pump, ballast"
-            Cells(i + offset, 6).Value = calculations.ballast_estimate(displacement) / 2
-            'Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = calculations.ballast_estimate(ship_type, prop_type, displacement)
+            'Call sheet_manip.assign_location(i + offset, num_nodes / 2, location_list)
 
-            Call sheet_manip.duplicateRow("Pump, ballast", 2, offset)  ' Duplicates "Pump, fire" line item at end of table and deletes current line
-            Call sheet_manip.assignLocation(Range("C1").Value + offset - 2, 1, location_list)           ' First pump location.
-            Call sheet_manip.assignLocation(Range("C1").Value + offset - 1, num_nodes, location_list)   ' Second pump location
+            Call sheet_manip.duplicate_row("Pump, ballast", 2, offset)                                  ' Duplicates pump line item at end of table and deletes current line
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 1, location_list)          ' First pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 1, num_nodes, location_list)  ' Second pump location
 
             ' Accounts for additional line item added to EPLA, don't want repetition
             If (i < num_entries - 1) Then
@@ -337,64 +363,112 @@ For i = 0 To num_entries - 1
             End If
         
         Case "Pump, fire"
-            ' Checks minimum number of fire pumps based on CFR 46 § 34.10-5.
-            If (LBP < 30.48) Then
+            ' Checks minimum number of fire pumps based on CFR 46 § 76.10, assume displacement = tonnage (easy but wrong).
+            If (displacement < 500) Then
                 ' Only one fire pump required.
-                Cells(i + offset, 6).Value = calculations.firepump_estimate(displacement)
-                Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
-            Else
+                Cells(i + offset, 6).Value = calculations.firepump_estimate(ship_type, prop_type, displacement)
+                Call sheet_manip.assign_location(i + offset, num_nodes / 2, location_list)
+                
+            ElseIf (displacement < 4000) Then
                 ' Additional firepump required.
-                Cells(i + offset, 6).Value = Round(calculations.firepump_estimate(displacement) / 2, 2)
-                Call sheet_manip.duplicateRow("Pump, fire", 2, offset)  ' Duplicates "Pump, fire" line item at end of table and deletes current line
-                Call sheet_manip.assignLocation(Range("C1").Value + offset - 2, 1, location_list)           ' First pump location.
-                Call sheet_manip.assignLocation(Range("C1").Value + offset - 1, num_nodes, location_list)   ' Second pump location
+                Cells(i + offset, 6).Value = Round(calculations.firepump_estimate(ship_type, prop_type, displacement) / 2, 2)
+                Call sheet_manip.duplicate_row("Pump, fire", 2, offset)                                         ' Duplicates pump line item at end of table and deletes current line
+                Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 1, location_list)              ' First pump location.
+                Call sheet_manip.assign_location(Range("C1").Value + offset - 1, num_nodes, location_list)      ' Second pump location
                 
                 ' Accounts for additional line item added to EPLA, don't want repetition
                 If (i < num_entries - 1) Then
                     i = i - 1
                     num_entries = num_entries - 1
                 End If
+            
+            Else
+                ' Two additional firepumps required.
+                Cells(i + offset, 6).Value = Round(calculations.firepump_estimate(ship_type, prop_type, displacement) / 3, 2)
+                Call sheet_manip.duplicate_row("Pump, fire", 3, offset)                                             ' Duplicates pump line item at end of table and deletes current line
+                Call sheet_manip.assign_location(Range("C1").Value + offset - 3, 1, location_list)                  ' First pump location.
+                Call sheet_manip.assign_location(Range("C1").Value + offset - 2, num_nodes / 2, location_list)      ' Second pump location.
+                Call sheet_manip.assign_location(Range("C1").Value + offset - 1, num_nodes, location_list)          ' Third pump location
+                
+                ' Accounts for additional line item added to EPLA, don't want repetition
+                If (i < num_entries - 1) Then
+                    i = i - 1
+                    num_entries = num_entries - 2
+                End If
 
             End If
         
         Case "Pump, bilge"
-            Cells(i + offset, 6).Value = calculations.bilge_estimate(displacement)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = calculations.bilge_estimate(ship_type, prop_type, displacement) / 4
+            
+            ' Additional bilge pumps required.
+            Call sheet_manip.duplicate_row("Pump, bilge", 4, offset)                                    ' Duplicates pump line item at end of table and deletes current line
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 4, 1, location_list)          ' First pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 3, 2, location_list)          ' Second pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 3, location_list)          ' Third pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 1, 4, location_list)          ' Fourth pump location
+            
+            ' Accounts for additional line item added to EPLA, don't want repetition
+            If (i < num_entries - 1) Then
+                i = i - 1
+                num_entries = num_entries - 3
+            End If
         
         Case "Pump, SW"
-            Cells(i + offset, 6).Value = calculations.SW_estimate(displacement)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = Round(calculations.SW_estimate(ship_type, prop_type, displacement) / 2, 2)
+            ' Additional pump required.
+            Call sheet_manip.duplicate_row("Pump, SW", 2, offset)                                           ' Duplicates pump line item at end of table and deletes current line
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 1, location_list)              ' First pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 1, num_nodes, location_list)      ' Second pump location
+            
+            ' Accounts for additional line item added to EPLA, don't want repetition
+            If (i < num_entries - 1) Then
+                i = i - 1
+                num_entries = num_entries - 1
+            End If
         
         Case "Pump, FW"
-            Cells(i + offset, 6).Value = calculations.FW_estimate(ME_MCR)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2, location_list)
+            Cells(i + offset, 6).Value = Round(calculations.FW_estimate(ship_type, prop_type, ME_MCR) / 2, 2)
+            ' Additional pump required.
+            Call sheet_manip.duplicate_row("Pump, FW", 2, offset)                                           ' Duplicates pump line item at end of table and deletes current line
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 2, 1, location_list)              ' First pump location.
+            Call sheet_manip.assign_location(Range("C1").Value + offset - 1, num_nodes, location_list)      ' Second pump location
+            
+            ' Accounts for additional line item added to EPLA, don't want repetition
+            If (i < num_entries - 1) Then
+                i = i - 1
+                num_entries = num_entries - 1
+            End If
         
         Case "Pump, sewage"
-            Cells(i + offset, 6).Value = calculations.sewage_estimate(displacement)
+            Cells(i + offset, 6).Value = calculations.sewage_estimate(ship_type, prop_type, displacement)
         
-        Case "Pump, steering gear"
-            'Cells(i + offset, 6).Value = Round(130 + LBP / 94, 2)
-            
-        Case "Pump, hot water"
-            'Cells(i + offset, 6).Value = Round(1.5 * ME_MCR / 3900, 2)
-            
         Case "Pump, potable water"
-            Cells(i + offset, 6).Value = calculations.potable_estimate(n_passengers)
+            Cells(i + offset, 6).Value = calculations.potable_estimate(ship_type, prop_type, n_passengers)
+            Call sheet_manip.assign_location(i + offset, num_nodes / 2 + 1, location_list)
         
+        Case "Heater, potable water"
+            Cells(i + offset, 6).Value = calculations.pot_wat_heater_estimate(ship_type, prop_type, ME_MCR)
+            Call sheet_manip.assign_location(i + offset, num_nodes / 2 + 1, location_list)
+            
         Case "Compressor, SS air"
-            Cells(i + offset, 6).Value = calculations.SS_comp_estimate(ME_MCR)
-            Call sheet_manip.assignLocation(i + offset, num_nodes / 2 + 1, location_list)
+            Cells(i + offset, 6).Value = calculations.SS_comp_estimate(ship_type, prop_type, ME_MCR)
+            Call sheet_manip.assign_location(i + offset, num_nodes / 2 + 1, location_list)
             
         Case "Anchor windlass"
-            Cells(i + offset, 6).Value = calculations.anchor_winch_estimate(displacement)
-            Call sheet_manip.assignLocation(i + offset, num_nodes, location_list)
+            Cells(i + offset, 6).Value = calculations.anchor_winch_estimate(ship_type, prop_type, displacement)
+            Call sheet_manip.assign_location(i + offset, num_nodes, location_list)
             
         Case "Mooring capstan"
-            Cells(i + offset, 6).Value = calculations.mooring_capstan_estimate(displacement)
-            Call sheet_manip.assignLocation(i + offset, num_nodes, location_list)
+            Cells(i + offset, 6).Value = calculations.mooring_capstan_estimate(ship_type, prop_type, displacement)
+            Call sheet_manip.assign_location(i + offset, num_nodes, location_list)
+        
+        Case "Purifier, FO"
+            Cells(i + offset, 6).Value = calculations.FO_purifier_estimate(ship_type, prop_type, ME_MCR)
+            Call sheet_manip.assign_location(i + offset, num_nodes / 2, location_list)
         
         Case Else
-            Debug.Print ("Could not identify " & iter)
+            'Debug.Print ("Could not identify " & iter)
         
     End Select
     
@@ -412,35 +486,35 @@ For i = 0 To num_entries - 1
             ' Checks if location cells are all empty.
             If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
                 ' Defaults to central location_node on machinery deck
-                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+                Call sheet_manip.assign_location(i + offset, Int(num_nodes / 2), location_list)
             End If
         
         Case 300
             ' Checks if location cells are all empty.
             If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
                 ' Defaults to central location_node on machinery deck
-                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+                Call sheet_manip.assign_location(i + offset, Int(num_nodes / 2), location_list)
             End If
         
         Case 400
             ' Checks if location cells are all empty.
             If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
                 ' Defaults electronics to fwdmost location_node on uppermost deck
-                Call sheet_manip.assignLocation(i + offset, location_list.Count - num_nodes + 1, location_list)
+                Call sheet_manip.assign_location(i + offset, location_list.Count - num_nodes + 1, location_list)
             End If
         
         Case 500
             ' Checks if location cells are all empty.
             If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
                 ' Defaults to central location_node on machinery deck
-                Call sheet_manip.assignLocation(i + offset, Int(num_nodes / 2), location_list)
+                Call sheet_manip.assign_location(i + offset, Int(num_nodes / 2), location_list)
             End If
         
         Case 600
             ' Checks if location cells are all empty.
             If (IsEmpty(Cells(i + offset, 3)) And IsEmpty(Cells(i + offset, 4)) And IsEmpty(Cells(i + offset, 5))) Then
                 ' Defaults electronics to fwdmost location_node on uppermost deck
-                Call sheet_manip.assignLocation(i + offset, location_list.Count - num_nodes + 1, location_list)
+                Call sheet_manip.assign_location(i + offset, location_list.Count - num_nodes + 1, location_list)
             End If
             
         Case Else
@@ -461,7 +535,7 @@ Next i
 Cells(1, 20).Value = Round((100 + 0.55 * (ME_MCR ^ 0.7)) * 1.5, 2)
 
 ' Adds borders to "Output" data cells.
-Worksheets("Output").Range("A6").CurrentRegion.Borders.LineStyle = xlContinuous
+Worksheets("Output").Range("A5").CurrentRegion.Borders.LineStyle = xlContinuous
 
 ' Sorts the "Output" sheet by name and SWBS
 'Worksheets("Output").Range("A5:ZZ9999").Sort Key1:=Range("B4"), Order1:=xlAscending
@@ -474,7 +548,7 @@ End Sub
 Sub Button2_Click()
 'button to clear the "Output" sheet
 
-Call sheet_manip.clearOutput
+Call sheet_manip.clear_output
 
 End Sub
 
